@@ -27,6 +27,13 @@ namespace Cryptography.Pgp.Core.Extensions
                 armoredOutStream.Write(bytes, StartOfStream, bytes.Length);
             }
         }
+        s
+        public static void IsNull(this Stream stream, string name)
+        {
+            if (stream == null) { throw new ArgumentNullException(name); }
+        }
+
+        #region Private Methods
 
         public static void WritePlainText(this Stream outputStream, 
             PgpEncryptedDataGenerator pgpEncryptedDataGenerator, byte[] bytes)
@@ -58,6 +65,7 @@ namespace Cryptography.Pgp.Core.Extensions
             return ((FileStream)stream).Name;
         }
 
+        #endregion Private Methods
 
     }
 }

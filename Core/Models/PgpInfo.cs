@@ -31,7 +31,8 @@ namespace Cryptography.Pgp.Core.Models
                 default:
                     return PgpLiteralData.Binary;
             }
-
         }
+
+
     }
 }

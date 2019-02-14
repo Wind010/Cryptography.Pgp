@@ -22,8 +22,7 @@ namespace Cryptography.Pgp.Core
 {
     using Extensions;
     using Models;
-    
-
+   
     public class Pgp : IDisposable
     {
         private const int BufferSize = 0x10000;
@@ -101,44 +100,7 @@ namespace Cryptography.Pgp.Core
             }
         }
 
-        private void ValidateEncryptFileParams(string inputFilePath, string outputFilePath, string publicKeyFilePath)
-        {
-            if (string.IsNullOrWhiteSpace(inputFilePath))
-            {
-                throw new ArgumentException(nameof(inputFilePath));
-            }
 
-            if (string.IsNullOrWhiteSpace(outputFilePath))
-            {
-                throw new ArgumentException(nameof(outputFilePath));
-            }
-
-            if (string.IsNullOrWhiteSpace(publicKeyFilePath))
-            {
-                throw new ArgumentException(nameof(publicKeyFilePath));
-            }
-
-            inputFilePath.Exists(nameof(inputFilePath));
-            inputFilePath.Exists(nameof(outputFilePath));
-            inputFilePath.Exists(nameof(publicKeyFilePath));
-        }
-
-        private void ValidateEncryptFileParams(Stream inputStream, Stream outputStream, Stream publicKeyStream)
-        {
-            if (inputStream == null)
-            {
-                throw new ArgumentException(nameof(inputStream));
-            }
-
-            if (outputStream == null)
-            {
-                throw new ArgumentException(nameof(outputStream));
-            }
-
-            if (publicKeyStream == null) {
-                throw new ArgumentException(nameof(publicKeyStream));
-            }
-        }
 
 
         public void Dispose()
