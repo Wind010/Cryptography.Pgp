@@ -1,44 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Org.BouncyCastle.Bcpg.OpenPgp;
+
 
 namespace Cryptography.Pgp.Core.Models
 {
-    using Cryptography.Common.Models;
-
-    public class PgpInfo : PrivatePublicKeyPair
+    public class PgpInfo : KeyPair
     {
-        public PgpInfo(string privateKeyFilePath, string publicKeyFilePath, string username, string password)
-        {
+        public CompressionAlgorithm CompressionAlgorithm { get; set; }
 
-            PrivateKeyFilePath = string.IsNullOrWhiteSpace(privateKeyFilePath) ? 
-                throw new ArgumentNullException(nameof(privateKeyFilePath)) : privateKeyFilePath;
-            PublicKeyFilePath = string.IsNullOrWhiteSpace(publicKeyFilePath) ?
-                throw new ArgumentNullException(nameof(publicKeyFilePath)) : publicKeyFilePath;
+        public SymmetricKeyAlgorithm SymmetricKeyAlgorithm { get; set; }
 
-            Username = string.IsNullOrWhiteSpace(username) ? string.Empty : username;
-            Password = string.IsNullOrWhiteSpace(password) ? string.Empty : password;
+        public int SignatureType { get; set; }
 
-            Strength = 1024;
-            Certainty = 8;
-            Armor = true;
-        }
+        public PublicKeyAlgorithm PublicKeyAlgorithm { get; set; }
 
-        public string PrivateKeyFilePath { get; private set; }
-
-        public string PublicKeyFilePath { get; private set; }
+        public FileType FileType { get; set; }
 
         /// <summary>
-        /// Username or Identity.
+        /// Mapping of internal FileType enumeration to PgpLiteralData character indicator of format.
         /// </summary>
-        public string Username { get; set; }
+        /// <param name="fileType"><see cref="FileType"/></param>
+        /// <returns><see cref="char"/></returns>
+        public char GetPgpLiteralDataFormat()
+        {
+            switch(FileType)
+            {
+                case FileType.UTF8:
+                    return PgpLiteralData.Utf8;
+                case FileType.Text:
+                    return PgpLiteralData.Text;
+                default:
+                    return PgpLiteralData.Binary;
+            }
 
-        public string Password { get; set; }
-
-        public int Strength { get; set; }
-
-        public int Certainty { get; set; }
-
-        public bool Armor { get; set; }
+        }
     }
 }

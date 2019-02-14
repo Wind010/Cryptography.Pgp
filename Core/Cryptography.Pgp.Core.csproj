@@ -8,8 +8,4 @@
     <PackageReference Include="BouncyCastle.OpenPgp" Version="1.8.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Common\Cryptography.Common.csproj" />
-  </ItemGroup>
-
 </Project>

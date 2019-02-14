@@ -6,7 +6,7 @@ namespace Cryptography.Pgp.Core
 {
     public interface IKeyGenerator
     {
-        void GenerateKeys(PgpInfo pgpInfo);
-        Task GenerateKeysAsync(PgpInfo pgpInfo, CancellationToken ct);
+        void GenerateKeys(KeyGenerationInfo pgpInfo);
+        Task GenerateKeysAsync(KeyGenerationInfo pgpInfo, CancellationToken ct);
     }
 }

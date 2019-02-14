@@ -31,13 +31,13 @@ namespace Cryptography.Pgp.Core
             _symmetricKeyAlgorithm = symmetricKeyAlgorithm;
         }
 
-        public async Task GenerateKeysAsync(PgpInfo pgpInfo, CancellationToken ct)
+        public async Task GenerateKeysAsync(KeyGenerationInfo pgpInfo, CancellationToken ct)
         {
             await Task.Run(() => GenerateKeys(pgpInfo), ct);
         }
 
 
-        public void GenerateKeys(PgpInfo pgpInfo)
+        public void GenerateKeys(KeyGenerationInfo pgpInfo)
         {
             using (Stream privateKeyStream = File.Open(pgpInfo.PrivateKeyFilePath, FileMode.OpenOrCreate))
             using (Stream publicKeyStream = File.Open(pgpInfo.PublicKeyFilePath, FileMode.OpenOrCreate))
@@ -51,8 +51,8 @@ namespace Cryptography.Pgp.Core
             }
         }
 
-        private void WriteKeyPairToFiles(Stream privateOut, Stream publicOut, AsymmetricKeyParameter publicKey, 
-            AsymmetricKeyParameter privateKey, PgpInfo pgpInfo)
+        private void WriteKeyPairToFiles(Stream privateOut, Stream publicOut, AsymmetricKeyParameter publicKey,
+            AsymmetricKeyParameter privateKey, KeyGenerationInfo pgpInfo)
         {
             if (pgpInfo.Armor)
             {
