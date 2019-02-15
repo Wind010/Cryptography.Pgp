@@ -1,7 +1,6 @@
-﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Cryptography.Pgp.Tests
+namespace Cryptography.Pgp.Core.Tests
 {
     [TestClass]
     public class UnitTest1
