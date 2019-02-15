@@ -160,11 +160,11 @@ namespace Cryptography.Pgp.Core.Extensions
 
         private static PgpSignatureGenerator GetPgpSignatureGenerator(this Stream compressedOut, Keys keys)
         {
-            PublicKeyAlgorithmTag tag = keys.Public.Algorithm;
+            PublicKeyAlgorithmTag tag = keys.Public.Value.Algorithm;
             var pgpSignatureGenerator = new PgpSignatureGenerator(tag, HashAlgorithmTag.Sha1);
-            pgpSignatureGenerator.InitSign(PgpSignature.BinaryDocument, keys.Private);
+            pgpSignatureGenerator.InitSign(PgpSignature.BinaryDocument, keys.Private.Value);
 
-            string userId = keys.Public.GetUserIds().Cast<string>().FirstOrDefault();
+            string userId = keys.Public.Value.GetUserIds().Cast<string>().FirstOrDefault();
 
             var subPacketGenerator = new PgpSignatureSubpacketGenerator();
             subPacketGenerator.SetSignerUserId(false, userId);

@@ -107,7 +107,7 @@ namespace Cryptography.Pgp.Core
 
             if (publicKeyEncryptedData == null)
             {
-                throw new PgpException(FailedToRetrievePgpPublicKeyEncryptedData)
+                throw new PgpException(FailedToRetrievePgpPublicKeyEncryptedData);
             }
 
             if (publicKeyEncryptedData.KeyId != keys.Public.Value.KeyId)

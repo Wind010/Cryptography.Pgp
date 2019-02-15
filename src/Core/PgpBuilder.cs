@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Cryptography.Pgp.Core
-{\
+{
     using Models;
 
     public abstract class PgpBase : IDisposable

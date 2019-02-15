@@ -24,7 +24,7 @@ namespace Cryptography.Pgp.Core.Parameters
         {
             if (! Armor.HasValue) { Armor = true; }
             if (! IntegrityCheck.HasValue) { IntegrityCheck = true; }
-            if (Password == null) { Password = string.Empty }
+            if (Password == null) { Password = string.Empty; }
         }
     }
 
