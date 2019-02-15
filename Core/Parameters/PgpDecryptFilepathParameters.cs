@@ -2,7 +2,7 @@
 {
     using Extensions;
 
-    public class PgpDecrytpFilepathParameters : PgpEncryptFilepathParameter, IPgpDecrytpFilepathParameters
+    public class PgpDecryptFilepathParameters : PgpEncryptFilepathParameter, IPgpDecrytpFilepathParameters
     {
         /// <summary>
         /// File path to the private key.

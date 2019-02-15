@@ -1,7 +1,7 @@
 ﻿
 namespace Cryptography.Pgp.Core.Parameters
 {
-    public class PgpEncryptAndSignFileParameters: PgpDecrytpFilepathParameters
+    public class PgpEncryptAndSignFileParameters: PgpDecryptFilepathParameters
     {
 
         public PgpEncryptOptions Options { get; set; }

@@ -13,6 +13,7 @@ namespace Cryptography.Pgp.Core.Parameters
 
         /// <summary>
         /// The encrypted or decrypted stream.
+        /// The encrypted or decrypted stream.
         /// </summary>
         public Stream OutputStream { get; set; }
 

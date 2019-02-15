@@ -1,17 +1,8 @@
-﻿using Org.BouncyCastle.Asn1.Pkcs;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Bcpg;
+﻿using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities.IO;
-using Org.BouncyCastle.X509;
-using System;
 
+using System;
 using System.IO;
 
 
@@ -23,8 +14,6 @@ namespace Cryptography.Pgp.Core
    
     public class PgpEncryption : PgpBase
     {
-        private const int BufferSize = 0x10000;
-
         public PgpEncryption(PgpInfo pgpInfo)
         {
             Info = pgpInfo ?? throw new ArgumentNullException(nameof(pgpInfo));
@@ -34,14 +23,14 @@ namespace Cryptography.Pgp.Core
         /// <summary>
         /// Encrypt a file.
         /// </summary>
-        /// <param name="pgpEncryptFilepathParameter"><see cref="PgpEncryptFilepathParameter"/></param>
-        public void EncryptFile(PgpEncryptFilepathParameter pgpEncryptFilepathParameter)
+        /// <param name="encryptFilepathParams"><see cref="PgpEncryptFilepathParameter"/></param>
+        public void EncryptFile(PgpEncryptFilepathParameter encryptFilepathParams)
         {
-            pgpEncryptFilepathParameter.Validate();
+            encryptFilepathParams.Validate();
 
-            using (Stream pkStream = File.OpenRead(pgpEncryptFilepathParameter.PublicKeyFilepath))
-            using (Stream outputStream = File.Create(pgpEncryptFilepathParameter.OutputFilepath))
-            using (Stream inputStream = File.OpenRead(pgpEncryptFilepathParameter.InputFilepath))
+            using (Stream pkStream = File.OpenRead(encryptFilepathParams.PublicKeyFilepath))
+            using (Stream outputStream = File.Create(encryptFilepathParams.OutputFilepath))
+            using (Stream inputStream = File.OpenRead(encryptFilepathParams.InputFilepath))
             {
                 var encryptStreamParams = new PgpEncryptStreamParameters
                 {
