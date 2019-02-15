@@ -24,37 +24,41 @@ namespace Cryptography.Pgp.Core
 
         private SymmetricKeyAlgorithm _symmetricKeyAlgorithm { get; set; }
 
-        public KeyGenerator(int signatureType, PublicKeyAlgorithm publicKeyAlgorithm, SymmetricKeyAlgorithm symmetricKeyAlgorithm)
+        public KeyGenerator(int signatureType, PublicKeyAlgorithm publicKeyAlgorithm, 
+            SymmetricKeyAlgorithm symmetricKeyAlgorithm)
         {
             _signatureType = signatureType;
             _publicKeyAlgorithm = publicKeyAlgorithm;
             _symmetricKeyAlgorithm = symmetricKeyAlgorithm;
         }
 
-        public async Task GenerateKeysAsync(KeyGenerationInfo pgpInfo, CancellationToken ct)
+        public async Task<Keys> GenerateEncryptionKeysAsync(KeyGenerationInfo keyInfo, CancellationToken ct)
         {
-            await Task.Run(() => GenerateKeys(pgpInfo), ct);
+            return await Task.Run(() => GenerateEncryptionKeys(keyInfo), ct);
         }
 
 
-        public void GenerateKeys(KeyGenerationInfo pgpInfo)
+        public Keys GenerateEncryptionKeys(KeyGenerationInfo keyInfo)
         {
-            using (Stream privateKeyStream = File.Open(pgpInfo.PrivateKeyFilePath, FileMode.OpenOrCreate))
-            using (Stream publicKeyStream = File.Open(pgpInfo.PublicKeyFilePath, FileMode.OpenOrCreate))
+            using (Stream privateKeyStream = File.Open(keyInfo.PrivateKeyFilepath, FileMode.OpenOrCreate))
+            using (Stream publicKeyStream = File.Open(keyInfo.PublicKeyFilepath, FileMode.OpenOrCreate))
             {
                 IAsymmetricCipherKeyPairGenerator kpg = new RsaKeyPairGenerator();
-                kpg.Init(new RsaKeyGenerationParameters(BigInteger.ValueOf(0x13), new SecureRandom(), pgpInfo.Strength, pgpInfo.Certainty));
+                kpg.Init(new RsaKeyGenerationParameters(BigInteger.ValueOf(0x13), new SecureRandom(), 
+                    keyInfo.Strength, keyInfo.Certainty));
 
                 AsymmetricCipherKeyPair asymmetricCipherKeyPair = kpg.GenerateKeyPair();
 
-                WriteKeyPairToFiles(privateKeyStream, publicKeyStream, asymmetricCipherKeyPair.Public, asymmetricCipherKeyPair.Private, pgpInfo);
+                return WriteKeyPairToFiles(privateKeyStream, publicKeyStream, asymmetricCipherKeyPair.Public, 
+                    asymmetricCipherKeyPair.Private, keyInfo);
             }
+
         }
 
-        private void WriteKeyPairToFiles(Stream privateOut, Stream publicOut, AsymmetricKeyParameter publicKey,
-            AsymmetricKeyParameter privateKey, KeyGenerationInfo pgpInfo)
+        private Keys WriteKeyPairToFiles(Stream privateOut, Stream publicOut, 
+            AsymmetricKeyParameter publicKey, AsymmetricKeyParameter privateKey, KeyGenerationInfo keyInfo)
         {
-            if (pgpInfo.Armor)
+            if (keyInfo.Armor)
             {
                 privateOut = new ArmoredOutputStream(privateOut);
             }
@@ -65,9 +69,9 @@ namespace Cryptography.Pgp.Core
                 publicKey,
                 privateKey,
                 DateTime.UtcNow,
-                pgpInfo.Username,
+                keyInfo.Username,
                 (SymmetricKeyAlgorithmTag)(int)_symmetricKeyAlgorithm,
-                pgpInfo.Password.ToCharArray(),
+                keyInfo.Password.ToCharArray(),
                 null,
                 null,
                 new SecureRandom()
@@ -77,16 +81,18 @@ namespace Cryptography.Pgp.Core
 
             privateOut.Close();
 
-            if (pgpInfo.Armor)
+            if (keyInfo.Armor)
             {
                 publicOut = new ArmoredOutputStream(publicOut);
             }
 
-            PgpPublicKey key = secretKey.PublicKey;
+            PgpPublicKey publicKeyFromSecret = secretKey.PublicKey;
 
-            key.Encode(publicOut);
+            publicKeyFromSecret.Encode(publicOut);
 
             publicOut.Close();
+
+            return new Keys(secretKey.ExtractPrivateKey(keyInfo.Password.ToCharArray()), secretKey, publicKeyFromSecret);
         }
 
 

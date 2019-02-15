@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace Cryptography.Pgp.Core.Models
 {
+    using Extensions;
+
     public class PrivateKey : IPrivateKey
     {
         public const string ThePrivateKeyFileDoesNotExist = "Private Key file='{0}' does not exist.";
@@ -18,6 +20,11 @@ namespace Cryptography.Pgp.Core.Models
         /// </summary>
         public PgpPrivateKey Value { get; private set; }
 
+        public PrivateKey(PgpPrivateKey privateKey, PgpSecretKey secretKey)
+        {
+            Value = privateKey ?? throw new ArgumentNullException(nameof(privateKey));
+            SecretKey = secretKey ?? throw new ArgumentNullException(nameof(secretKey));
+        }
 
         /// <summary>
         /// <param name="privateKeyFileStream"><see cref="string"/></param>
@@ -26,20 +33,9 @@ namespace Cryptography.Pgp.Core.Models
         /// <param name="passPhrase"><see cref="string"/></param>
         public PrivateKey(string privateKeyFilePath, string passPhrase)
         {
-            if (string.IsNullOrWhiteSpace(privateKeyFilePath))
-            {
-                throw new ArgumentNullException(nameof(privateKeyFilePath));
-            }
-
-            if (string.IsNullOrWhiteSpace(passPhrase))
-            {
-                throw new ArgumentNullException(nameof(passPhrase));
-            }
-
-            if (! File.Exists(privateKeyFilePath))
-            {
-                throw new FileNotFoundException(string.Format(ThePrivateKeyFileDoesNotExist, privateKeyFilePath));
-            }
+            privateKeyFilePath.IsNullOrWhitespace(nameof(privateKeyFilePath));
+            passPhrase.IsNullOrWhitespace(nameof(passPhrase));
+            privateKeyFilePath.Exists(nameof(privateKeyFilePath));
 
             SecretKey = GetSecretKeyFromPrivateKey(privateKeyFilePath);
             Value = GetPrivateKeyWithSecret(privateKeyFilePath);
@@ -52,16 +48,8 @@ namespace Cryptography.Pgp.Core.Models
         /// <param name="passPhrase"><see cref="string"/></param>
         public PrivateKey(Stream privateKeyFileStream, string passPhrase)
         {
-            if (privateKeyFileStream == null)
-            {
-                throw new ArgumentNullException(nameof(privateKeyFileStream));
-            }
-
-            if (string.IsNullOrWhiteSpace(passPhrase))
-            {
-                throw new ArgumentNullException(nameof(passPhrase));
-            }
-
+            privateKeyFileStream.IsNull(nameof(privateKeyFileStream));
+            passPhrase.IsNullOrWhitespace(nameof(passPhrase));
 
             SecretKey = GetSecretKeyFromPrivateKey(privateKeyFileStream);
             Value = GetPrivateKeyWithSecret(passPhrase);

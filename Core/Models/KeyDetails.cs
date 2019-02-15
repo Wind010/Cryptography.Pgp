@@ -7,10 +7,9 @@ namespace Cryptography.Pgp.Core.Models
     {
         public KeyGenerationInfo(string privateKeyFilePath, string publicKeyFilePath, string username, string password)
         {
-
-            PrivateKeyFilePath = string.IsNullOrWhiteSpace(privateKeyFilePath) ? 
+            PrivateKeyFilepath = string.IsNullOrWhiteSpace(privateKeyFilePath) ? 
                 throw new ArgumentNullException(nameof(privateKeyFilePath)) : privateKeyFilePath;
-            PublicKeyFilePath = string.IsNullOrWhiteSpace(publicKeyFilePath) ?
+            PublicKeyFilepath = string.IsNullOrWhiteSpace(publicKeyFilePath) ?
                 throw new ArgumentNullException(nameof(publicKeyFilePath)) : publicKeyFilePath;
 
             Username = string.IsNullOrWhiteSpace(username) ? string.Empty : username;
@@ -20,11 +19,6 @@ namespace Cryptography.Pgp.Core.Models
             Certainty = 8;
             Armor = true;
         }
-
-        public string PrivateKeyFilePath { get; private set; }
-
-        public string PublicKeyFilePath { get; private set; }
-
 
         /// <summary>
         /// Username or Identity.

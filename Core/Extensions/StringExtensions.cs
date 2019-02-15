@@ -3,6 +3,8 @@ using System.IO;
 
 namespace Cryptography.Pgp.Core.Extensions
 {
+    using Models;
+
     public static class StringExtensions
     {
         public static void Exists(this string filePath, string name)
@@ -21,5 +23,6 @@ namespace Cryptography.Pgp.Core.Extensions
                 throw new ArgumentNullException(name);
             }
         }
+
     }
 }

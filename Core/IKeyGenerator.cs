@@ -1,12 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Cryptography.Pgp.Core.Models;
 
 namespace Cryptography.Pgp.Core
 {
+    using Models;
+
     public interface IKeyGenerator
     {
-        void GenerateKeys(KeyGenerationInfo pgpInfo);
-        Task GenerateKeysAsync(KeyGenerationInfo pgpInfo, CancellationToken ct);
+        Keys GenerateEncryptionKeys(KeyGenerationInfo keyInfo);
+        Task<Keys> GenerateEncryptionKeysAsync(KeyGenerationInfo keyInfo, CancellationToken ct);
     }
 }

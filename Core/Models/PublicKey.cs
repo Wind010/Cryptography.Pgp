@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace Cryptography.Pgp.Core.Models
 {
+    using Extensions;
+
     public class PublicKey : IPublicKey
     {
         public const string PublicKeyFileDoesNotExist = "Public Key file='{0}' does not exist.";
@@ -16,19 +18,16 @@ namespace Cryptography.Pgp.Core.Models
         /// </summary>
         public PgpPublicKey Value { get; private set; }
 
+        public PublicKey(PgpPublicKey publicKey)
+        {
+            Value = publicKey ?? throw new ArgumentNullException(nameof(publicKey));
+        }
 
         /// <param name="publicKeyFilePath"><see cref="string"/></param>
         public PublicKey(string publicKeyFilePath)
         {
-            if (string.IsNullOrWhiteSpace(publicKeyFilePath))
-            {
-                throw new ArgumentNullException(nameof(publicKeyFilePath));
-            }
-
-            if (! File.Exists(publicKeyFilePath))
-            {
-                throw new FileNotFoundException(string.Format(PublicKeyFileDoesNotExist, publicKeyFilePath));
-            }
+            publicKeyFilePath.IsNullOrWhitespace(nameof(publicKeyFilePath));
+            publicKeyFilePath.Exists(nameof(publicKeyFilePath));
 
             Value = ReadPublicKey(publicKeyFilePath);
         }
@@ -39,10 +38,7 @@ namespace Cryptography.Pgp.Core.Models
         /// <param name="publicKeyFileStream"><see cref="Stream"/></param>
         public PublicKey(Stream publicKeyFileStream)
         {
-            if (publicKeyFileStream == null)
-            {
-                throw new ArgumentNullException(nameof(publicKeyFileStream));
-            }
+            publicKeyFileStream.IsNull(nameof(publicKeyFileStream));
 
             Value = ReadPublicKey(publicKeyFileStream);
         }
