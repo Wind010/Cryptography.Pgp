@@ -1,7 +1,6 @@
 ﻿using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Utilities.IO;
 
-using System;
 using System.IO;
 using System.Linq;
 
@@ -12,11 +11,11 @@ namespace Cryptography.Pgp.Core
 
     public class PgpDecryption 
     {
-        public const string UnableToFindSecretKey = "Unable to find secret key.";
+        public const string UnableToExtractPrivateKeyFromPgpSecretKeyRingBundle = "Unable to extract private key from PGP secret key ring bundle.";
         public const string EncryptedMessageContainsSignedMessage = "Encrypted message contains a signed message - not literal data.";
         public const string MessageIsNotASimpleEncryptedFile = "Message is not a simple encrypted file.";
         public const string FailedToVerifyInputStream = "Failed to verify input stream.";
-
+        public const string FailedToRetrievePgpPublicKeyEncryptedData = "Failed to retrieve PGP public key encrypted data.";
 
         public PgpDecryption()
         {
@@ -69,13 +68,18 @@ namespace Cryptography.Pgp.Core
             PgpPublicKeyEncryptedData publicKeyEncryptedData = encryptedDataList.GetEncryptedDataObjects()
                 .Cast<PgpPublicKeyEncryptedData>()
                 .FirstOrDefault(encryptedData => {
-                    privateKey = FindSecretKey(keyRingBundle, encryptedData.KeyId, decryptStreamParams.Password);
+                    privateKey = ExtractPrivateKeyFromSecretKeyRingBundle(keyRingBundle, encryptedData.KeyId, decryptStreamParams.Password);
                     return privateKey != null;
                 });
 
             if (privateKey == null)
             {
-                throw new InvalidOperationException(UnableToFindSecretKey);
+                throw new PgpException(UnableToExtractPrivateKeyFromPgpSecretKeyRingBundle);
+            }
+
+            if (publicKeyEncryptedData == null)
+            {
+                throw new PgpException(FailedToRetrievePgpPublicKeyEncryptedData);
             }
 
             FindAndPipeMessageToStream(publicKeyEncryptedData, privateKey, decryptStreamParams.OutputStream);
@@ -101,6 +105,10 @@ namespace Cryptography.Pgp.Core
                 .Cast<PgpPublicKeyEncryptedData>()
                 .FirstOrDefault(encryptedData =>  encryptedData != null );
 
+            if (publicKeyEncryptedData == null)
+            {
+                throw new PgpException(FailedToRetrievePgpPublicKeyEncryptedData)
+            }
 
             if (publicKeyEncryptedData.KeyId != keys.Public.Value.KeyId)
             {
@@ -126,16 +134,16 @@ namespace Cryptography.Pgp.Core
             return (PgpEncryptedDataList)objFactory.NextPgpObject();
         }
 
-        private PgpPrivateKey FindSecretKey(PgpSecretKeyRingBundle secretKeyRingBundle, long keyId, string password)
+        private PgpPrivateKey ExtractPrivateKeyFromSecretKeyRingBundle(PgpSecretKeyRingBundle secretKeyRingBundle, long keyId, string password)
         {
-            PgpSecretKey pgpSecKey = secretKeyRingBundle.GetSecretKey(keyId);
+            PgpSecretKey secretKey = secretKeyRingBundle.GetSecretKey(keyId);
 
-            if (pgpSecKey == null)
+            if (secretKey == null)
             {
                 return null;
             }
 
-            return pgpSecKey.ExtractPrivateKey(password.ToCharArray());
+            return secretKey.ExtractPrivateKey(password.ToCharArray());
         }
 
         private void FindAndPipeMessageToStream(PgpPublicKeyEncryptedData publicKeyEncryptedData, 

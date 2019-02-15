@@ -5,7 +5,6 @@ using Org.BouncyCastle.Security;
 using System;
 using System.IO;
 
-
 namespace Cryptography.Pgp.Core
 {
     using Extensions;
