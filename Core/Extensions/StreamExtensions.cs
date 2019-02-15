@@ -65,9 +65,6 @@ namespace Cryptography.Pgp.Core.Extensions
             }
         }
 
-
-
-
         public static void WriteEncryptedWithAsciiArmor(this Stream outputStream, string inputFilepath, PgpInfo info,
             Keys keys, bool withIntegrityCheck)
         {
@@ -85,8 +82,6 @@ namespace Cryptography.Pgp.Core.Extensions
                 armoredStream.WriteEncrypted(inputStream, info, keys, withIntegrityCheck);
             }
         }
-
-
 
         public static void IsNull(this Stream stream, string name)
         {
