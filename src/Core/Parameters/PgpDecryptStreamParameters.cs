@@ -6,6 +6,8 @@ namespace Cryptography.Pgp.Core.Parameters
 
     public class PgpDecryptStreamParameters : PgpEncryptStreamParameters
     {
+        bool _disposed = false;
+
         /// <summary>
         /// Stream of the private key.
         /// </summary>
@@ -16,5 +18,24 @@ namespace Cryptography.Pgp.Core.Parameters
             base.Validate();
             PrivateKeyStream.IsNull(nameof(PrivateKeyStream));
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed) { return; }
+
+            if (disposing)
+            {
+                // For unmanaged objects use SafeFileHandle. 
+
+                // Free any other managed objects here.
+                PrivateKeyStream.Dispose();
+            }
+
+            _disposed = true;
+            base.Dispose(disposing);
+        }
+
+
+
     }
 }

@@ -1,5 +1,7 @@
 ﻿
 
+using System;
+
 namespace Cryptography.Pgp.Core.Parameters
 {
     public class PgpEncryptOptions : IPgpEncryptOptions
@@ -26,6 +28,8 @@ namespace Cryptography.Pgp.Core.Parameters
             if (! IntegrityCheck.HasValue) { IntegrityCheck = true; }
             if (Password == null) { Password = string.Empty; }
         }
+
+        
     }
 
 }

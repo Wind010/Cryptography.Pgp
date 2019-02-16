@@ -9,7 +9,10 @@ namespace Cryptography.Pgp.Core.Models
 
         public SymmetricKeyAlgorithm SymmetricKeyAlgorithm { get; set; }
 
-        public int SignatureType { get; set; }
+        /// <summary>
+        /// PgpSignature
+        /// </summary>
+        public int SignatureType { get; set; }  // TODO Add mapping?
 
         public PublicKeyAlgorithm PublicKeyAlgorithm { get; set; }
 

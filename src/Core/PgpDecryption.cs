@@ -39,11 +39,10 @@ namespace Cryptography.Pgp.Core
                 var decryptStreamParams = new PgpDecryptStreamParameters()
                 {
                     InputStream = inputStream,
-                    OutputStream = outputStream,
                     PrivateKeyStream = privateKeyStream
                 };
 
-                Decrypt(decryptStreamParams);
+                Decrypt(decryptStreamParams, outputStream);
             }
         }
 
@@ -52,7 +51,7 @@ namespace Cryptography.Pgp.Core
         /// Decrypt input stream with PgpSecretKeyBundle.
         /// </summary>
         /// <param name="decryptStreamParams"><see cref="PgpDecryptStreamParameters"/></param>
-        public void Decrypt(PgpDecryptStreamParameters decryptStreamParams)
+        public void Decrypt(PgpDecryptStreamParameters decryptStreamParams, Stream outputStream)
         {
             decryptStreamParams.Validate();
 
@@ -82,7 +81,7 @@ namespace Cryptography.Pgp.Core
                 throw new PgpException(FailedToRetrievePgpPublicKeyEncryptedData);
             }
 
-            FindAndPipeMessageToStream(publicKeyEncryptedData, privateKey, decryptStreamParams.OutputStream);
+            FindAndPipeMessageToStream(publicKeyEncryptedData, privateKey, outputStream);
         }
 
 
@@ -90,7 +89,7 @@ namespace Cryptography.Pgp.Core
         /// Decrypt input stream with specified private key and password.
         /// </summary>
         /// <param name="decryptStreamParams"><see cref="PgpDecryptStreamParameters"/></param>
-        public void DecryptAndVerify(PgpDecryptStreamParameters decryptStreamParams)
+        public void DecryptAndVerify(PgpDecryptStreamParameters decryptStreamParams, Stream outputStream)
         {
             decryptStreamParams.Validate();
 
@@ -115,7 +114,7 @@ namespace Cryptography.Pgp.Core
                 throw new PgpException(FailedToVerifyInputStream);
             }
 
-            FindAndPipeMessageToStream(publicKeyEncryptedData, keys.Private.Value, decryptStreamParams.OutputStream);
+            FindAndPipeMessageToStream(publicKeyEncryptedData, keys.Private.Value, outputStream);
         }
 
 
@@ -131,10 +130,11 @@ namespace Cryptography.Pgp.Core
                 return (PgpEncryptedDataList)pgpObject;
             }
 
-            return (PgpEncryptedDataList)objFactory.NextPgpObject();
+            return (PgpEncryptedDataList)objFactory?.NextPgpObject();
         }
 
-        private PgpPrivateKey ExtractPrivateKeyFromSecretKeyRingBundle(PgpSecretKeyRingBundle secretKeyRingBundle, long keyId, string password)
+        private PgpPrivateKey ExtractPrivateKeyFromSecretKeyRingBundle(PgpSecretKeyRingBundle secretKeyRingBundle, 
+            long keyId, string password)
         {
             PgpSecretKey secretKey = secretKeyRingBundle.GetSecretKey(keyId);
 

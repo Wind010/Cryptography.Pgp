@@ -34,10 +34,9 @@ namespace Cryptography.Pgp.Core
                 var encryptStreamParams = new PgpEncryptStreamParameters
                 {
                     PublicKeyStream = pkStream,
-                    OutputStream = outputStream,
                     InputStream = inputStream
                 };
-                Encrypt(encryptStreamParams);
+                Encrypt(encryptStreamParams, outputStream);
             }
         }
 
@@ -46,7 +45,7 @@ namespace Cryptography.Pgp.Core
         /// PGP Encrypt the input stream.
         /// </summary>
         /// <param name="encryptParams"><see cref="PgpEncryptStreamParameters"/></param>
-        public void Encrypt(PgpEncryptStreamParameters encryptParams)
+        public void Encrypt(PgpEncryptStreamParameters encryptParams, Stream outputStream)
         {
             encryptParams.Validate();
             encryptParams.CheckDefaults();
@@ -55,16 +54,18 @@ namespace Cryptography.Pgp.Core
             {
                 if (Info.CompressionAlgorithm != CompressionAlgorithm.Uncompressed)
                 {
-                    var comData = 
+                    var comData =
                         new PgpCompressedDataGenerator((CompressionAlgorithmTag)(int)Info.CompressionAlgorithm);
-                    encryptParams.OutputStream
+                    outputMemoryStream
                         .WriteToLiteralData(encryptParams.InputStream, Info.GetPgpLiteralDataFormat());
 
                     comData.Close();
                 }
                 else
-                    encryptParams.OutputStream
+                {
+                    outputMemoryStream
                         .WriteToLiteralData(encryptParams.InputStream, Info.GetPgpLiteralDataFormat());
+                }
 
                 var pgpEncryptedDataGenerator = 
                     new PgpEncryptedDataGenerator((SymmetricKeyAlgorithmTag)(int)Info.SymmetricKeyAlgorithm,
@@ -77,15 +78,18 @@ namespace Cryptography.Pgp.Core
 
                 if (encryptParams.Armor.Value)
                 {
-                    encryptParams.OutputStream.WriteWithAsciiArmor(pgpEncryptedDataGenerator, bytes);
+                    outputStream.WriteWithAsciiArmor(pgpEncryptedDataGenerator, bytes);
                     return;
                 }
 
-                encryptParams.OutputStream.WritePlainText(pgpEncryptedDataGenerator, bytes);
+                outputStream.WritePlainText(pgpEncryptedDataGenerator, bytes);
             }
         }
 
-
+        /// <summary>
+        /// Encrypt and sign file.
+        /// </summary>
+        /// <param name="encryptAndSignParameters"><see cref="PgpEncryptAndSignFileParameters"/></param>
         public void EncryptFileAndSign(PgpEncryptAndSignFileParameters encryptAndSignParameters)
         {
             encryptAndSignParameters.Validate();
@@ -115,7 +119,13 @@ namespace Cryptography.Pgp.Core
             }
         }
 
-        public void EncryptFileAndSign(PgpEncryptAndSignStreamParameters encryptAndSignParameters)
+        /// <summary>
+        /// Encrypt and sign the input stream.
+        /// </summary>
+        /// <param name="encryptAndSignParameters"><see cref="PgpEncryptAndSignStreamParameters"/></param>
+        /// <param name="outputStream"><see cref="Stream"/></param>
+        public void EncryptStreamAndSign(PgpEncryptAndSignStreamParameters encryptAndSignParameters,
+            Stream outputStream)
         {
             encryptAndSignParameters.Validate();
 
@@ -126,7 +136,7 @@ namespace Cryptography.Pgp.Core
 
             if (encryptAndSignParameters.Options.Armor.HasValue)
             {
-                encryptAndSignParameters.OutputStream.WriteEncryptedWithAsciiArmor(encryptAndSignParameters.InputStream,
+                outputStream.WriteEncryptedWithAsciiArmor(encryptAndSignParameters.InputStream,
                     Info, keys, options.IntegrityCheck.Value);
             }
         }

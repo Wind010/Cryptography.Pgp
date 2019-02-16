@@ -5,6 +5,7 @@ using Org.BouncyCastle.Security;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Cryptography.Pgp.Core.Extensions
 {
@@ -15,6 +16,12 @@ namespace Cryptography.Pgp.Core.Extensions
         private const int StartOfStream = 0;
         private const int Bits = 4096;
         private const int BufferSize = 0x10000;
+
+        public static string ToString(this Stream stream, Encoding encoding)
+        {
+            var memStream = (MemoryStream)stream;
+            return encoding.GetString(memStream.GetBuffer(), StartOfStream, memStream.GetBuffer().Length);
+        }
 
         public static void WriteToLiteralData(this Stream output, Stream input, char fileType)
         {
