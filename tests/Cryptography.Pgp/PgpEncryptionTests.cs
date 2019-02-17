@@ -37,7 +37,7 @@ namespace Cryptography.Pgp.Core.Tests
 
         [TestMethod]
         [TestCategory("Integration")]
-        public void Encrypt_NoCompressionAlgorithm_AesSymmmetricKeyAlgorithm_BinaryDocumentSignature_RsaPublicKeyAlgorithm_TextFileType_EncryptedString()
+        public void Encrypt_NoCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
         {
             var pgpInfo = new PgpInfo()
             {
@@ -56,21 +56,25 @@ namespace Cryptography.Pgp.Core.Tests
                 var pgpEncryption = new PgpEncryption(pgpInfo);
                 pgpEncryption.Encrypt(encryptStreamParams, encryptedStream);
 
+                // Assert encryption
+                string encryptedString = encryptedStream.ToString(Encoding.UTF8);
+                encryptedString.Should().NotBeNullOrWhiteSpace();
+
                 var pgpDecrytpion = new PgpDecryption();
                 var decryptStreamParameters = GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
-
-                string encryptedString = encryptedStream.ToString(Encoding.UTF8);
-                encryptedStream.Position = 0;
 
                 using (var decryptedStream = new MemoryStream())
                 {
                     pgpDecrytpion.Decrypt(decryptStreamParameters, decryptedStream);
 
-                    // Assert
+                    // Assert decryption
+                    var x = decryptedStream.ToString(Encoding.UTF8);
+
                     decryptedStream.ToString(Encoding.UTF8).Should().Be(plainText);
                 }
             }
         }
+
 
 
         [TestMethod]

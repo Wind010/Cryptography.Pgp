@@ -68,7 +68,7 @@ namespace Cryptography.Pgp.Core
                         .WriteToLiteralData(encryptParams.InputStream, Info.GetPgpLiteralDataFormat());
                 }
 
-                var pgpEncryptedDataGenerator = 
+                var pgpEncryptedDataGenerator =
                     new PgpEncryptedDataGenerator((SymmetricKeyAlgorithmTag)(int)Info.SymmetricKeyAlgorithm,
                     encryptParams.IntegrityCheck.Value, new SecureRandom());
 
@@ -86,6 +86,7 @@ namespace Cryptography.Pgp.Core
                 outputStream.WritePlainText(pgpEncryptedDataGenerator, bytes);
             }
         }
+
 
         /// <summary>
         /// Encrypt and sign file.

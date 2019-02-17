@@ -16,14 +16,28 @@ namespace Cryptography.Pgp.Core.Extensions
         private const int StartOfStream = 0;
         private const int Bits = 4096;
         private const int BufferSize = 0x10000;
+        private const char NullChar = '\0';
 
-        public static string ToString(this Stream stream, Encoding encoding)
+
+        /// <summary>
+        /// Take the input stream and return a string of the specified encoding.
+        /// Trims any null characters ('/0') from the end.
+        /// Will reset the position of the stream to the beginning (0).
+        /// </summary>
+        /// <param name="input"><see cref="Stream"/></param>
+        /// <param name="encoding"><see cref="Encoding"/></param>
+        /// <returns><see cref="string"/></returns>
+        public static string ToString(this Stream input, Encoding encoding)
         {
             using (var memStream = new MemoryStream())
             {
-                stream.CopyTo(memStream);
+                input.Position = 0;
+                input.CopyTo(memStream);
                 memStream.Position = 0;
-                return encoding.GetString(memStream.GetBuffer(), StartOfStream, memStream.GetBuffer().Length);
+                input.Position = 0;
+                string str = encoding.GetString(memStream.GetBuffer(), StartOfStream, memStream.GetBuffer().Length).TrimEnd(NullChar);
+                input.Position = 0;
+                return str;
             }
         }
 
@@ -33,9 +47,20 @@ namespace Cryptography.Pgp.Core.Extensions
             using (Stream pOut = literalDataGenerator.Open(output, fileType, GetFileName(input), input.Length, DateTime.Now))
             {
                 PipeStreamContents(input, pOut, Bits);
+                output = pOut;
             }
         }
 
+        /// <summary>
+        /// Creates armored stream with use of the PgpEncryptedDataGenerator.  
+        /// </summary>
+        /// <remarks>
+        /// Similar idea to Base64 encoding where the data is encoded to a specific character set.
+        /// Does not provide any security benefit.
+        /// </remarks>
+        /// <param name="outputStream"><see cref="Stream"/></param>
+        /// <param name="pgpEncryptedDataGenerator"><see cref="PgpEncryptedDataGenerator"/></param>
+        /// <param name="bytes"><see cref="byte[]"/></param>
         public static void WriteWithAsciiArmor(this Stream outputStream, 
             PgpEncryptedDataGenerator pgpEncryptedDataGenerator, byte[] bytes)
         {
@@ -65,7 +90,7 @@ namespace Cryptography.Pgp.Core.Extensions
         }
 
         public static void WriteEncrypted(this Stream outputStream, Stream inputStream, PgpInfo info,
-        Keys keys, bool withIntegrityCheck)
+            Keys keys, bool withIntegrityCheck)
         {
             using (Stream encryptedData = outputStream.ChainEncryptedOut(info, keys, withIntegrityCheck))
             using (Stream encryptedAndCompressedData = encryptedData.CompressAndChainEncryptedData(info.CompressionAlgorithm))
@@ -97,6 +122,12 @@ namespace Cryptography.Pgp.Core.Extensions
             }
         }
 
+        /// <summary>
+        /// Check if strem is null.
+        /// </summary>
+        /// <param name="stream"><see cref="Stream"/></param>
+        /// <param name="name"><see cref="string"/>Name of variable passed in.</param>
+        /// <exception cref="ArgumentNullException">Thrown if stream is null.</exception>
         public static void IsNull(this Stream stream, string name)
         {
             if (stream == null) { throw new ArgumentNullException(name); }
@@ -111,6 +142,7 @@ namespace Cryptography.Pgp.Core.Extensions
             using (Stream plainStream = pgpEncryptedDataGenerator.Open(outputStream, bytes.Length))
             {
                 plainStream.Write(bytes, StartOfStream, bytes.Length);
+                outputStream = plainStream;
             }
         }
 
