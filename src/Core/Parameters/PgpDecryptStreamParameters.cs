@@ -17,6 +17,7 @@ namespace Cryptography.Pgp.Core.Parameters
         {
             base.Validate();
             PrivateKeyStream.IsNull(nameof(PrivateKeyStream));
+            PrivateKeyStream.Position = 0;
         }
 
         protected override void Dispose(bool disposing)

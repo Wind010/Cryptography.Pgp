@@ -21,6 +21,10 @@ namespace Cryptography.Pgp.Core.Tests
         protected static string Password { get; private set; }
         protected static string EmailAddress { get; private set; }
 
+        protected const string GeneratedPrivateKeyFilename = "private.asc";
+        protected const string GeneratedPublicKeyFilename = "public.asc";
+
+
         protected static IConfigurationRoot Configuration { private set; get; }
 
         protected static void LoadConfiguration(TestContext context)

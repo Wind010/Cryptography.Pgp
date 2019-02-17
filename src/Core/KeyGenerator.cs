@@ -37,7 +37,6 @@ namespace Cryptography.Pgp.Core
             return await Task.Run(() => GenerateEncryptionKeys(keyInfo), ct);
         }
 
-
         public Keys GenerateEncryptionKeys(KeyGenerationInfo keyInfo)
         {
             using (Stream privateKeyStream = File.Open(keyInfo.PrivateKeyFilepath, FileMode.OpenOrCreate))

@@ -19,8 +19,12 @@ namespace Cryptography.Pgp.Core.Extensions
 
         public static string ToString(this Stream stream, Encoding encoding)
         {
-            var memStream = (MemoryStream)stream;
-            return encoding.GetString(memStream.GetBuffer(), StartOfStream, memStream.GetBuffer().Length);
+            using (var memStream = new MemoryStream())
+            {
+                stream.CopyTo(memStream);
+                memStream.Position = 0;
+                return encoding.GetString(memStream.GetBuffer(), StartOfStream, memStream.GetBuffer().Length);
+            }
         }
 
         public static void WriteToLiteralData(this Stream output, Stream input, char fileType)

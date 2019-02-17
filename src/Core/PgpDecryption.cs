@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Cryptography.Pgp.Core
 {
+    using Extensions;
     using Parameters;
     using Models;
 
@@ -206,6 +207,8 @@ namespace Cryptography.Pgp.Core
                 // the library.
                 throw new PgpException(CouldNotFindEncryptedDataListInMessage);
             }
+
+            return encryptedDataList;
         }
 
         private PgpPrivateKey ExtractPrivateKeyFromSecretKeyRingBundle(PgpSecretKeyRingBundle secretKeyRingBundle, 
@@ -245,8 +248,7 @@ namespace Cryptography.Pgp.Core
                         return;
                     }
 
-                    // If we found literal data, we have found the decrypted data. Stream the literal data to the
-                    // output stream, and get out of here because we're done.
+                    // If we found literal data, we have found the decrypted data.
                     if (plainMessage is PgpLiteralData)
                     {
                         PipeToStream(plainMessage, outputStream);

@@ -34,16 +34,18 @@ namespace Cryptography.Pgp.Core.Tests
         {
         }
 
+
         [TestMethod]
+        [TestCategory("Integration")]
         public void Encrypt_NoCompressionAlgorithm_AesSymmmetricKeyAlgorithm_BinaryDocumentSignature_RsaPublicKeyAlgorithm_TextFileType_EncryptedString()
         {
             var pgpInfo = new PgpInfo()
             {
                 CompressionAlgorithm = CompressionAlgorithm.Uncompressed,
-                SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256,
-                SignatureType = 0,
-                PublicKeyAlgorithm = PublicKeyAlgorithm.RsaEncrypt,
-                FileType = FileType.Text
+                SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.TripleDes,
+                SignatureType = 16,
+                PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral,
+                FileType = FileType.Binary
             };
 
             string plainText = "Hello";
@@ -57,12 +59,66 @@ namespace Cryptography.Pgp.Core.Tests
                 var pgpDecrytpion = new PgpDecryption();
                 var decryptStreamParameters = GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
 
-                using (var decrytedStream = new MemoryStream())
+                using (var decryptedStream = new MemoryStream())
                 {
-                    pgpDecrytpion.Decrypt(decryptStreamParameters, decrytedStream);
+                    pgpDecrytpion.Decrypt(decryptStreamParameters, decryptedStream);
 
                     // Assert
-                    decrytedStream.ToString(Encoding.UTF8).Should().Be(plainText);
+                    decryptedStream.ToString(Encoding.UTF8).Should().Be(plainText);
+                }
+            }
+        }
+
+
+        [TestMethod]
+        [TestCategory("Integration")]
+        public void Encrypt_GeneratedKeys_NoCompressionAlgorithm_AesSymmmetricKeyAlgorithm_BinaryDocumentSignature_RsaPublicKeyAlgorithm_TextFileType_EncryptedString()
+        {
+            var pgpInfo = new PgpInfo()
+            {
+                CompressionAlgorithm = CompressionAlgorithm.Uncompressed,
+                SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256,
+                SignatureType = 16,
+                PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral,
+                FileType = FileType.Text
+            };
+
+
+            string plainText = "Hello";
+            PgpEncryptStreamParameters encryptStreamParams = GetPgpEncryptStreamParameters(plainText);
+
+            var keyInfo = new KeyGenerationInfo(GeneratedPrivateKeyFilename, GeneratedPublicKeyFilename, EmailAddress, Password);
+            var keyGenerator = new KeyGenerator(16, PublicKeyAlgorithm.RsaGeneral, SymmetricKeyAlgorithm.Aes256);
+            Keys keys = keyGenerator.GenerateEncryptionKeys(keyInfo);
+
+            using (var pub = new MemoryStream())
+            {
+                keys.Public.Value.Encode(pub);
+
+                pub.Position = 0;
+                encryptStreamParams.PublicKeyStream = pub;
+
+                using (var encryptedStream = new MemoryStream())
+                {
+                    var pgpEncryption = new PgpEncryption(pgpInfo);
+                    pgpEncryption.Encrypt(encryptStreamParams, encryptedStream);
+
+                    var pgpDecrytpion = new PgpDecryption();
+                    var decryptStreamParameters = GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
+
+                    using (var decryptedStream = new MemoryStream())
+                    {
+                        using (FileStream priv = File.OpenRead(GeneratedPrivateKeyFilename))
+                        {
+                            decryptStreamParameters.PrivateKeyStream = priv;
+
+
+                            pgpDecrytpion.Decrypt(decryptStreamParameters, decryptedStream);
+
+                            // Assert
+                            decryptedStream.ToString(Encoding.UTF8).Should().Be(plainText);
+                        }
+                    }
                 }
             }
         }
@@ -93,7 +149,6 @@ namespace Cryptography.Pgp.Core.Tests
                 Armor = encryptParams.Armor,
                 IntegrityCheck = encryptParams.IntegrityCheck
             };
-
         }
 
     }

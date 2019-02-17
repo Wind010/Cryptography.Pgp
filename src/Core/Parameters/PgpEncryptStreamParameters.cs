@@ -23,6 +23,8 @@ namespace Cryptography.Pgp.Core.Parameters
         {
             InputStream.IsNull(nameof(InputStream));
             PublicKeyStream.IsNull(nameof(PublicKeyStream));
+            InputStream.Position = 0;
+            PublicKeyStream.Position = 0;
         }
 
         protected virtual void Dispose(bool disposing)

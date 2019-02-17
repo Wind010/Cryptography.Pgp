@@ -50,21 +50,22 @@ namespace Cryptography.Pgp.Core
             encryptParams.Validate();
             encryptParams.CheckDefaults();
 
-            using (var outputMemoryStream = new MemoryStream())
+            using (var outMemStream = new MemoryStream())
             {
                 if (Info.CompressionAlgorithm != CompressionAlgorithm.Uncompressed)
                 {
-                    var comData =
+                    var compressionDataGenerator =
                         new PgpCompressedDataGenerator((CompressionAlgorithmTag)(int)Info.CompressionAlgorithm);
-                    outputMemoryStream
-                        .WriteToLiteralData(encryptParams.InputStream, Info.GetPgpLiteralDataFormat());
+                    outMemStream
+                        .WriteToLiteralData(compressionDataGenerator.Open(outMemStream)
+                        , Info.GetPgpLiteralDataFormat());
 
-                    comData.Close();
+                    compressionDataGenerator.Close();
                 }
                 else
                 {
-                    outputMemoryStream
-                        .WriteToLiteralData(encryptParams.InputStream, Info.GetPgpLiteralDataFormat());
+                    outMemStream
+                        .WriteToLiteralData(outMemStream, Info.GetPgpLiteralDataFormat());
                 }
 
                 var pgpEncryptedDataGenerator = 
@@ -74,7 +75,7 @@ namespace Cryptography.Pgp.Core
                 var publicKey = new PublicKey(encryptParams.PublicKeyStream);
                 pgpEncryptedDataGenerator.AddMethod(publicKey.Value);
 
-                byte[] bytes = outputMemoryStream.ToArray();
+                byte[] bytes = outMemStream.ToArray();
 
                 if (encryptParams.Armor.Value)
                 {

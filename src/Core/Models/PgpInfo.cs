@@ -5,6 +5,15 @@ namespace Cryptography.Pgp.Core.Models
 {
     public class PgpInfo : KeyPair
     {
+        public PgpInfo()
+        {
+            CompressionAlgorithm = CompressionAlgorithm.Zip;
+            SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256;
+            SignatureType = PgpSignature.DefaultCertification;
+            PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral;
+            FileType = FileType.Binary;
+        }
+
         public CompressionAlgorithm CompressionAlgorithm { get; set; }
 
         public SymmetricKeyAlgorithm SymmetricKeyAlgorithm { get; set; }
