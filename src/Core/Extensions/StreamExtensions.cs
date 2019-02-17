@@ -41,6 +41,15 @@ namespace Cryptography.Pgp.Core.Extensions
             }
         }
 
+        /// <summary>
+        /// Write the plain text literal data with <see cref="PgpLiteralDataGenerator"/>.
+        /// </summary>
+        /// <param name="output"><see cref="Stream"/></param>
+        /// <param name="input"><see cref="Stream"/></param>
+        /// <param name="fileType"><see cref="char"/><see cref="FileType"/></param>
+        /// <exception cref="SystemNotSupportedException">
+        /// Will be thrown if input stream is not from a <see cref="FileStream"/>, such as a <see cref="MemoryStream."/>
+        /// </exception>
         public static void WriteToLiteralData(this Stream output, Stream input, char fileType)
         {
             var literalDataGenerator = new PgpLiteralDataGenerator();
@@ -113,9 +122,7 @@ namespace Cryptography.Pgp.Core.Extensions
                 armoredStream.WriteEncrypted(inputStream, info, keys, withIntegrityCheck);
             }
         }
-
-
-
+        
         /// <summary>
         /// Check if strem is null.
         /// </summary>

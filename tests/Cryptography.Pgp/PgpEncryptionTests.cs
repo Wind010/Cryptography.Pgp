@@ -17,6 +17,8 @@ namespace Cryptography.Pgp.Core.Tests
     [TestClass]
     public class PgpEncryptionTests : TestBase
     {
+        private const string PlainTextTestString = "Hello";
+
         [ClassInitialize()]
         public static void ClassInit(TestContext context)
         {
@@ -37,7 +39,43 @@ namespace Cryptography.Pgp.Core.Tests
 
         [TestMethod]
         [TestCategory("Integration")]
-        public void Encrypt_NoCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
+        public void Encrypt_String_NoCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
+        {
+            TestEncryptDecrypt(new PgpInfo());
+        }
+
+
+        [TestMethod]
+        [TestCategory("Integration")]
+        public void Encrypt_String_ZipCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
+        {
+            var pgpInfo = new PgpInfo() { CompressionAlgorithm = CompressionAlgorithm.Zip };
+
+            TestEncryptDecrypt(new PgpInfo());
+        }
+
+        [TestMethod]
+        [TestCategory("Integration")]
+        public void Encrypt_String_ZLibCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
+        {
+            var pgpInfo = new PgpInfo() { CompressionAlgorithm = CompressionAlgorithm.ZLib };
+
+            TestEncryptDecrypt(new PgpInfo());
+        }
+
+        [TestMethod]
+        [TestCategory("Integration")]
+        public void Encrypt_String_BZip2CompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
+        {
+            var pgpInfo = new PgpInfo() { CompressionAlgorithm = CompressionAlgorithm.BZip2 };
+
+            TestEncryptDecrypt(new PgpInfo());
+        }
+
+
+        [TestMethod]
+        [TestCategory("Integration")]
+        public void Encrypt_File_ZipCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
         {
             var pgpInfo = new PgpInfo()
             {
@@ -48,87 +86,41 @@ namespace Cryptography.Pgp.Core.Tests
                 FileType = FileType.UTF8
             };
 
-            string plainText = "Hello";
-            PgpEncryptStreamParameters encryptStreamParams = GetPgpEncryptStreamParameters(plainText);
-            
-            using (var encryptedStream = new MemoryStream())
-            {
-                var pgpEncryption = new PgpEncryption(pgpInfo);
-                pgpEncryption.Encrypt(encryptStreamParams, encryptedStream);
+            const string testFile = "Test.txt";
+            PgpEncryptStreamParameters encryptStreamParams = GetPgpEncryptStreamParameters(PlainTextTestString, testFile);
 
-                // Assert encryption
-                string encryptedString = encryptedStream.ToString(Encoding.UTF8);
-                encryptedString.Should().NotBeNullOrWhiteSpace();
-
-                var pgpDecrytpion = new PgpDecryption();
-                var decryptStreamParameters = GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
-
-                using (var decryptedStream = new MemoryStream())
-                {
-                    pgpDecrytpion.Decrypt(decryptStreamParameters, decryptedStream);
-
-                    // Assert decryption
-                    var x = decryptedStream.ToString(Encoding.UTF8);
-
-                    decryptedStream.ToString(Encoding.UTF8).Should().Be(plainText);
-                }
-            }
+            TestEncryptDecrypt(new PgpInfo());
         }
-
 
 
         [TestMethod]
         [TestCategory("Integration")]
         public void Encrypt_GeneratedKeys_NoCompressionAlgorithm_AesSymmmetricKeyAlgorithm_BinaryDocumentSignature_RsaPublicKeyAlgorithm_TextFileType_EncryptedString()
         {
-            var pgpInfo = new PgpInfo()
-            {
-                CompressionAlgorithm = CompressionAlgorithm.Uncompressed,
-                SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256,
-                SignatureType = 16,
-                PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral,
-                FileType = FileType.Text
-            };
-
-
-            string plainText = "Hello";
-            PgpEncryptStreamParameters encryptStreamParams = GetPgpEncryptStreamParameters(plainText);
+            PgpEncryptStreamParameters encryptStreamParams = GetPgpEncryptStreamParameters(PlainTextTestString);
 
             var keyInfo = new KeyGenerationInfo(GeneratedPrivateKeyFilename, GeneratedPublicKeyFilename, EmailAddress, Password);
             var keyGenerator = new KeyGenerator(16, PublicKeyAlgorithm.RsaGeneral, SymmetricKeyAlgorithm.Aes256);
             Keys keys = keyGenerator.GenerateEncryptionKeys(keyInfo);
 
-            using (var pub = new MemoryStream())
+            var decryptStreamParams = GetPgpDecryptStreamParameters(encryptStreamParams, new MemoryStream());
+
+            using (FileStream priv = File.OpenRead(GeneratedPrivateKeyFilename))
             {
-                keys.Public.Value.Encode(pub);
+                decryptStreamParams.PrivateKeyStream = priv;
 
-                pub.Position = 0;
-                encryptStreamParams.PublicKeyStream = pub;
-
-                using (var encryptedStream = new MemoryStream())
+                using (var pub = new MemoryStream())
                 {
-                    var pgpEncryption = new PgpEncryption(pgpInfo);
-                    pgpEncryption.Encrypt(encryptStreamParams, encryptedStream);
+                    keys.Public.Value.Encode(pub);
 
-                    var pgpDecrytpion = new PgpDecryption();
-                    var decryptStreamParameters = GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
+                    pub.Position = 0;
+                    encryptStreamParams.PublicKeyStream = pub;
 
-                    using (var decryptedStream = new MemoryStream())
-                    {
-                        using (FileStream priv = File.OpenRead(GeneratedPrivateKeyFilename))
-                        {
-                            decryptStreamParameters.PrivateKeyStream = priv;
-
-
-                            pgpDecrytpion.Decrypt(decryptStreamParameters, decryptedStream);
-
-                            // Assert
-                            decryptedStream.ToString(Encoding.UTF8).Should().Be(plainText);
-                        }
-                    }
+                    TestEncryptDecrypt(new PgpInfo(), encryptStreamParams, decryptStreamParams);
                 }
             }
         }
+
 
 
         private PgpEncryptStreamParameters GetPgpEncryptStreamParameters(string plainText, 
@@ -144,6 +136,15 @@ namespace Cryptography.Pgp.Core.Tests
             };
         }
 
+        private PgpEncryptStreamParameters GetPgpEncryptStreamParameters(string plainText, string fileName,
+            bool armor = true, bool withIntegrityCheck = true)
+        {
+            var parameters = GetPgpEncryptStreamParameters(plainText);
+            File.WriteAllText(fileName, plainText);
+
+            return parameters;
+        }
+
         private PgpDecryptStreamParameters GetPgpDecryptStreamParameters(PgpEncryptStreamParameters encryptParams, 
             Stream inputStream)
         {
@@ -156,6 +157,37 @@ namespace Cryptography.Pgp.Core.Tests
                 Armor = encryptParams.Armor,
                 IntegrityCheck = encryptParams.IntegrityCheck
             };
+        }
+
+
+        private void TestEncryptDecrypt(PgpInfo pgpInfo, PgpEncryptStreamParameters encryptStreamParams = null,
+            PgpDecryptStreamParameters decryptStreamParams = null)
+        {
+            encryptStreamParams = encryptStreamParams ?? GetPgpEncryptStreamParameters(PlainTextTestString);
+
+            using (var encryptedStream = new MemoryStream())
+            {
+                var pgpEncryption = new PgpEncryption(pgpInfo);
+                // Act 
+                pgpEncryption.Encrypt(encryptStreamParams, encryptedStream);
+
+                // Assert encryption
+                string encryptedString = encryptedStream.ToString(Encoding.UTF8);
+                encryptedString.Should().NotBeNullOrWhiteSpace();
+
+                var pgpDecrytpion = new PgpDecryption();
+                decryptStreamParams = decryptStreamParams ?? GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
+                decryptStreamParams.InputStream = encryptedStream;
+
+                using (var decryptedStream = new MemoryStream())
+                {
+                    // Act
+                    pgpDecrytpion.Decrypt(decryptStreamParams, decryptedStream);
+
+                    // Assert decryption
+                    decryptedStream.ToString(Encoding.UTF8).Should().Be(encryptStreamParams.InputStream.ToString(Encoding.UTF8));
+                }
+            }
         }
 
     }

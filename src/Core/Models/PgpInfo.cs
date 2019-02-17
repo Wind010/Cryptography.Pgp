@@ -7,7 +7,7 @@ namespace Cryptography.Pgp.Core.Models
     {
         public PgpInfo()
         {
-            CompressionAlgorithm = CompressionAlgorithm.Zip;
+            CompressionAlgorithm = CompressionAlgorithm.Uncompressed;
             SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256;
             SignatureType = PgpSignature.DefaultCertification;
             PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral;
