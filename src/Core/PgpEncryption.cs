@@ -57,7 +57,7 @@ namespace Cryptography.Pgp.Core
                     var compressionDataGenerator =
                         new PgpCompressedDataGenerator((CompressionAlgorithmTag)(int)Info.CompressionAlgorithm);
                     outMemStream
-                        .WriteToLiteralData(compressionDataGenerator.Open(outMemStream)
+                        .WriteToLiteralData(compressionDataGenerator.Open(encryptParams.InputStream)
                         , Info.GetPgpLiteralDataFormat());
 
                     compressionDataGenerator.Close();
@@ -65,7 +65,7 @@ namespace Cryptography.Pgp.Core
                 else
                 {
                     outMemStream
-                        .WriteToLiteralData(outMemStream, Info.GetPgpLiteralDataFormat());
+                        .WriteToLiteralData(encryptParams.InputStream, Info.GetPgpLiteralDataFormat());
                 }
 
                 var pgpEncryptedDataGenerator = 

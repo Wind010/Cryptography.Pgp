@@ -42,15 +42,15 @@ namespace Cryptography.Pgp.Core.Tests
             var pgpInfo = new PgpInfo()
             {
                 CompressionAlgorithm = CompressionAlgorithm.Uncompressed,
-                SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.TripleDes,
+                SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256,
                 SignatureType = 16,
                 PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral,
-                FileType = FileType.Binary
+                FileType = FileType.UTF8
             };
 
             string plainText = "Hello";
             PgpEncryptStreamParameters encryptStreamParams = GetPgpEncryptStreamParameters(plainText);
-
+            
             using (var encryptedStream = new MemoryStream())
             {
                 var pgpEncryption = new PgpEncryption(pgpInfo);
@@ -58,6 +58,9 @@ namespace Cryptography.Pgp.Core.Tests
 
                 var pgpDecrytpion = new PgpDecryption();
                 var decryptStreamParameters = GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
+
+                string encryptedString = encryptedStream.ToString(Encoding.UTF8);
+                encryptedStream.Position = 0;
 
                 using (var decryptedStream = new MemoryStream())
                 {

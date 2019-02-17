@@ -11,7 +11,7 @@ namespace Cryptography.Pgp.Core.Models
             SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256;
             SignatureType = PgpSignature.DefaultCertification;
             PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral;
-            FileType = FileType.Binary;
+            FileType = FileType.UTF8;
         }
 
         public CompressionAlgorithm CompressionAlgorithm { get; set; }

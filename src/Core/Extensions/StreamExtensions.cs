@@ -30,8 +30,10 @@ namespace Cryptography.Pgp.Core.Extensions
         public static void WriteToLiteralData(this Stream output, Stream input, char fileType)
         {
             var literalDataGenerator = new PgpLiteralDataGenerator();
-            Stream pOut = literalDataGenerator.Open(output, fileType, GetFileName(input), input.Length, DateTime.Now);
-            PipeStreamContents(input, pOut, Bits);
+            using (Stream pOut = literalDataGenerator.Open(output, fileType, GetFileName(input), input.Length, DateTime.Now))
+            {
+                PipeStreamContents(input, pOut, Bits);
+            }
         }
 
         public static void WriteWithAsciiArmor(this Stream outputStream, 
@@ -39,8 +41,9 @@ namespace Cryptography.Pgp.Core.Extensions
         {
             using (var armoredStream = new ArmoredOutputStream(outputStream))
             using (Stream armoredOutStream = pgpEncryptedDataGenerator.Open(armoredStream, bytes.Length))
-            { 
+            {
                 armoredOutStream.Write(bytes, StartOfStream, bytes.Length);
+                outputStream = armoredOutStream;
             }
         }
 
