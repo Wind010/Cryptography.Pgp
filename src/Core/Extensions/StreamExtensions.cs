@@ -75,17 +75,9 @@ namespace Cryptography.Pgp.Core.Extensions
         public static void WriteEncrypted(this Stream outputStream, string inputFilepath, PgpInfo info,
             Keys keys, bool withIntegrityCheck)
         {
-            using (Stream encryptedData = outputStream.ChainEncryptedOut(info, keys, withIntegrityCheck))
-            using (Stream encryptedAndCompressedData = encryptedData.CompressAndChainEncryptedData(info.CompressionAlgorithm))
+            using (FileStream inputFileStream = File.Open(inputFilepath, FileMode.Open))
             {
-                PgpSignatureGenerator signatureGenerator = encryptedAndCompressedData.GetPgpSignatureGenerator(keys);
-                using (Stream literalOut = encryptedAndCompressedData.ChainLiteralData(info, inputFilepath))
-                {
-                    using (FileStream inputFileStream = File.Open(inputFilepath, FileMode.Open))
-                    {
-                        encryptedAndCompressedData.WriteOutputAndSign(literalOut, inputFileStream, signatureGenerator);
-                    }
-                }
+                WriteEncrypted(outputStream, inputFileStream, info, keys, withIntegrityCheck);
             }
         }
 
@@ -107,9 +99,9 @@ namespace Cryptography.Pgp.Core.Extensions
         public static void WriteEncryptedWithAsciiArmor(this Stream outputStream, string inputFilepath, PgpInfo info,
             Keys keys, bool withIntegrityCheck)
         {
-            using (var armoredStream = new ArmoredOutputStream(outputStream))
+            using (FileStream inputFileStream = File.Open(inputFilepath, FileMode.Open))
             {
-                armoredStream.WriteEncrypted(inputFilepath, info, keys, withIntegrityCheck);
+                WriteEncryptedWithAsciiArmor(outputStream, inputFileStream, info, keys, withIntegrityCheck);
             }
         }
 
@@ -121,6 +113,8 @@ namespace Cryptography.Pgp.Core.Extensions
                 armoredStream.WriteEncrypted(inputStream, info, keys, withIntegrityCheck);
             }
         }
+
+
 
         /// <summary>
         /// Check if strem is null.
