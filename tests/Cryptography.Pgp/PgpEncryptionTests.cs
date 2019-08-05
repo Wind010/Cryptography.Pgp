@@ -56,6 +56,33 @@ namespace Cryptography.Pgp.Core.Tests
 
         [TestMethod]
         [TestCategory("Integration")]
+        public void EncryptStreamAndSign_ZipCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
+        {
+            var pgpInfo = new PgpInfo() { CompressionAlgorithm = CompressionAlgorithm.Zip };
+
+            TestEncryptDecryptWithSignature(pgpInfo,
+                new PgpEncryptAndSignStreamParameters
+                {
+                    InputStream = PlainTextTestString.ToStream(Encoding.UTF8),
+                    PublicKeyStream = Configuration.GetSection("encryptingPublicKey").Value.DecodeBase64(Encoding.UTF8).ToStream(Encoding.UTF8),
+                    Armor = true,
+                    IntegrityCheck = true,
+                    Password = "tests",
+                    PrivateKeyStream = Configuration.GetSection("signingPrivateKey").Value.DecodeBase64(Encoding.UTF8).ToStream(Encoding.UTF8),
+                    Options = new PgpEncryptOptions()
+                },
+                new PgpDecryptStreamParameters
+                {
+                    Armor = true,
+                    IntegrityCheck = true,
+                    Password = "starbucksreload",
+                    PrivateKeyStream = Configuration.GetSection("decryptingPrivateKeyStream").Value.DecodeBase64(Encoding.UTF8).ToStream(Encoding.UTF8),
+                    PublicKeyStream = Configuration.GetSection("verifyingPublicKeyStream").Value.DecodeBase64(Encoding.UTF8).ToStream(Encoding.UTF8)
+                });
+        }
+
+        [TestMethod]
+        [TestCategory("Integration")]
         public void Encrypt_String_ZLibCompressionAlgorithm_Aes256SymmmetricKeyAlgorithm_GeneralSignatureType_RsaGeneralPublicKeyAlgorithm_UTF8FileType_Armored_EncryptedString()
         {
             var pgpInfo = new PgpInfo() { CompressionAlgorithm = CompressionAlgorithm.ZLib };
@@ -79,7 +106,7 @@ namespace Cryptography.Pgp.Core.Tests
         {
             var pgpInfo = new PgpInfo()
             {
-                CompressionAlgorithm = CompressionAlgorithm.Uncompressed,
+                CompressionAlgorithm = CompressionAlgorithm.Zip,
                 SymmetricKeyAlgorithm = SymmetricKeyAlgorithm.Aes256,
                 SignatureType = 16,
                 PublicKeyAlgorithm = PublicKeyAlgorithm.RsaGeneral,
@@ -89,7 +116,7 @@ namespace Cryptography.Pgp.Core.Tests
             const string testFile = "Test.txt";
             PgpEncryptStreamParameters encryptStreamParams = GetPgpEncryptStreamParameters(PlainTextTestString, testFile);
 
-            TestEncryptDecrypt(new PgpInfo());
+            TestEncryptDecrypt(pgpInfo);
         }
 
 
@@ -190,5 +217,35 @@ namespace Cryptography.Pgp.Core.Tests
             }
         }
 
+
+        private void TestEncryptDecryptWithSignature(PgpInfo pgpInfo, PgpEncryptAndSignStreamParameters encryptStreamParams = null,
+            PgpDecryptStreamParameters decryptStreamParams = null)
+        {
+            //encryptStreamParams = encryptStreamParams;
+
+            using (var encryptedStream = new MemoryStream())
+            {
+                var pgpEncryption = new PgpEncryption(pgpInfo);
+                // Act 
+                pgpEncryption.EncryptStreamAndSign(encryptStreamParams, encryptedStream);
+
+                // Assert encryption
+                string encryptedString = encryptedStream.ToString(Encoding.UTF8);
+                encryptedString.Should().NotBeNullOrWhiteSpace();
+
+                var pgpDecrytpion = new PgpDecryption();
+                decryptStreamParams = decryptStreamParams ?? GetPgpDecryptStreamParameters(encryptStreamParams, encryptedStream);
+                decryptStreamParams.InputStream = encryptedStream;
+
+                using (var decryptedStream = new MemoryStream())
+                {
+                    // Act
+                    pgpDecrytpion.DecryptAndVerify(decryptStreamParams, decryptedStream);
+
+                    // Assert decryption
+                    decryptedStream.ToString(Encoding.UTF8).Should().Be(encryptStreamParams.InputStream.ToString(Encoding.UTF8));
+                }
+            }
+        }
     }
 }
