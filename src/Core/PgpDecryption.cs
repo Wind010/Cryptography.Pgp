@@ -149,7 +149,8 @@ namespace Cryptography.Pgp.Core
                 throw new PgpException(FailedToRetrievePgpPublicKeyEncryptedData);
             }
 
-            if (publicKeyEncryptedData.KeyId != keys.Public.Value.KeyId)
+            // Encrypted data keyId must match the public key associated with the private key.
+            if (publicKeyEncryptedData.KeyId != keys.Private.SecretKey.PublicKey.KeyId)
             {
                 throw new PgpException(FailedToVerifyInputStream);
             }
