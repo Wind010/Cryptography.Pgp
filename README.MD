@@ -1,0 +1,1 @@
+Wrapper around BouncyCastle for PgP encryption, decryption, signature, verification.  Based off https://github.com/Cinchoo/ChoPGP
